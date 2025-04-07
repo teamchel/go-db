@@ -89,7 +89,7 @@ func (s ParcelService) NextStatus(number int) error {
 }
 
 func (s ParcelService) ChangeAddress(number int, address string) error {
-	return s.store.SetAddress(number, address)
+	return s.store.setAddress(number, address)
 }
 
 func (s ParcelService) Delete(number int) error {

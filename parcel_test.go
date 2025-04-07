@@ -33,25 +33,21 @@ func TestAddGetDelete(t *testing.T) {
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
 
-	// add
 	id, err := store.Add(parcel)
 	require.NoError(t, err)
 	require.NotZero(t, id)
 
-	// get
 	storedParcel, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, id, storedParcel.Number)
-	require.Equal(t, parcel.Client, storedParcel.Client)
-	require.Equal(t, parcel.Status, storedParcel.Status)
-	require.Equal(t, parcel.Address, storedParcel.Address)
-	require.Equal(t, parcel.CreatedAt, storedParcel.CreatedAt)
 
-	// delete
+	expectedParcel := parcel
+	expectedParcel.Number = id
+
+	require.Equal(t, expectedParcel, storedParcel)
+
 	err = store.Delete(id)
 	require.NoError(t, err)
 
-	// check deleted
 	_, err = store.Get(id)
 	require.Error(t, err)
 }
@@ -72,7 +68,7 @@ func TestSetAddress(t *testing.T) {
 
 	// set address
 	newAddress := "new test address"
-	err = store.SetAddress(id, newAddress)
+	err = store.setAddress(id, newAddress)
 	require.NoError(t, err)
 
 	// check
@@ -120,17 +116,19 @@ func TestGetByClient(t *testing.T) {
 	}
 	parcelMap := map[int]Parcel{}
 
+	// задаём всем посылкам один и тот же идентификатор клиента
 	client := randRange.Intn(10_000_000)
 	parcels[0].Client = client
 	parcels[1].Client = client
 	parcels[2].Client = client
 
 	// add
-	for i := 0; i < len(parcels); i++ {
+	for i := range parcels {
 		id, err := store.Add(parcels[i])
 		require.NoError(t, err)
 		require.NotZero(t, id)
 
+		// обновляем идентификатор добавленной посылки
 		parcels[i].Number = id
 		parcelMap[id] = parcels[i]
 	}
@@ -143,10 +141,9 @@ func TestGetByClient(t *testing.T) {
 	// check
 	for _, parcel := range storedParcels {
 		expected, ok := parcelMap[parcel.Number]
-		require.True(t, ok)
-		require.Equal(t, expected.Client, parcel.Client)
-		require.Equal(t, expected.Status, parcel.Status)
-		require.Equal(t, expected.Address, parcel.Address)
-		require.Equal(t, expected.CreatedAt, parcel.CreatedAt)
+		require.True(t, ok, "посылка с номером %d не найдена в ожидаемых данных", parcel.Number)
+
+		// Сравниваем всю структуру целиком
+		require.Equal(t, expected, parcel, "полученная посылка не соответствует ожидаемой")
 	}
 }

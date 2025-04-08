@@ -68,7 +68,7 @@ func TestSetAddress(t *testing.T) {
 
 	// set address
 	newAddress := "new test address"
-	err = store.setAddress(id, newAddress)
+	err = store.SetAddress(id, newAddress)
 	require.NoError(t, err)
 
 	// check

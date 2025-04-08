@@ -91,15 +91,22 @@ func (s ParcelService) NextStatus(number int) error {
 func (s ParcelService) ChangeAddress(number int, address string) error {
 	return s.store.SetAddress(number, address)
 }
-
 func (s ParcelService) Delete(number int) error {
 	return s.store.Delete(number)
 }
 
 func main() {
 	// настройте подключение к БД
+	db, err := sql.Open("sqlite", "tracker.db")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer db.Close()
 
-	store := // создайте объект ParcelStore функцией NewParcelStore
+	// создаем объект ParcelStore
+	store := NewParcelStore(db)
+	// создаем сервис для работы с посылками
 	service := NewParcelService(store)
 
 	// регистрация посылки
